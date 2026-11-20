@@ -1,11 +1,11 @@
 ---
 name: frappe-ui-screens
-description: Build and change app screens with frappe-ui (Vue 3 + Tailwind, v1.1.0) — lists, record pages, forms, dialogs, sidebars and shells, tabs, trees, menus, toasts, charts, rich-text editors — and fetch Frappe data with useCall, useList, useDoc, useDoctype and useNewDoc. Written from frappe-ui's own source, with its recipes (full app screens) and UI/UX design rules for app screens. Use it before writing or reviewing ANY Vue screen that imports frappe-ui or frappe-ui/list, in any Frappe app, even a small change, because frappe-ui mistakes fail silently (no CSS, no error, data null).
+description: Build and change app screens with frappe-ui (Vue 3 + Tailwind, v1.2.0) — lists, record pages, forms, dialogs, sidebars and shells, tabs, trees, menus, toasts, charts, rich-text editors — and fetch Frappe data with useCall, useList, useDoc, useDoctype and useNewDoc. Written from frappe-ui's own source, with its recipes (full app screens) and UI/UX design rules for app screens. Use it before writing or reviewing ANY Vue screen that imports frappe-ui or frappe-ui/list, in any Frappe app, even a small change, because frappe-ui mistakes fail silently (no CSS, no error, data null).
 ---
 
 # frappe-ui — building app screens that are correct and well designed
 
-Everything here was read from frappe-ui **1.1.0**'s source (`node_modules/frappe-ui/` in your app; docs and recipes in the repo https://github.com/frappe/frappe-ui at tag v1.1.0). `file:line` citations are relative to `node_modules/frappe-ui/src/` unless they start with `tailwind/`, `docs/` or `skills/`. Where its docs and its code disagree, the references say so: **the code wins**. When unsure, open the component's file and read it — every gotcha below cites the file and line.
+Everything here was read from frappe-ui **1.2.0**'s source (`node_modules/frappe-ui/` in your app, component `.md` docs included; the `docs/` site with the recipes, the component stories and frappe-ui's own `skills/frappe-ui` only in the repo https://github.com/frappe/frappe-ui at tag v1.2.0 — the npm package leaves them out). `file:line` citations are relative to `node_modules/frappe-ui/src/` (a bare component folder such as `Dialog/` is in `src/components/`) unless they start with `tailwind/`, `vite/`, `experimental/`, `docs/` or `skills/`. Where its docs and its code disagree, the references say so: **the code wins**. When unsure, open the component's file and read it — every gotcha below cites the file and line.
 
 ## How to work
 
@@ -64,6 +64,7 @@ Everything here was read from frappe-ui **1.1.0**'s source (`node_modules/frappe
 | A hierarchy | `Tree` (you apply drops yourself; `nodeKey` defaults to `key`) | navigation.md |
 | A list or table of records | `frappe-ui/list`: `List`, `ListHeader`, `ListRows`, `ListRow`, `ListCell`, `ListGroup` | list.md |
 | Keyboard shortcuts | `useKeyboardShortcut` (key names: `Shift+Slash`, not `?`) | navigation.md |
+| A command palette (Mod+K) | `CommandPalette` family from `frappe-ui/experimental` (you add the shortcut) | editors.md §9 |
 | Charts and number cards | `frappe-ui/charts` inside `ChartCard` with a height | charts.md |
 | Rich text | `frappe-ui/editor`: `Editor` + `EditorContent` (+ an upload function) | editors.md |
 | Code | `frappe-ui/code-editor` | editors.md |
@@ -92,7 +93,7 @@ Behaviour
 - `Dialog :dismissible="false"` stops Escape and outside clicks, not the header × (`Dialog.vue:36-45,89-95`): guard unsaved work with `:open` + `@update:open`. `#default` and `#actions` are separate divs, so a `<form>` cannot wrap the buttons — `form="<id>"` on the submit Button; and `novalidate`, since `required` is native (design.md §2.5).
 - A control bound to `doc.x` that saves on change snaps back until the response lands (stores are written only from the response): show a local value first, revert on failure (design.md §1.10).
 - `ListRows` does not pass `value` on: without `:value="value"` on `ListRow` there is no checkbox and no active row (`molecules/list/ListRowBase.vue:85`); `v-model:active` needs the update listener bound (`List.vue:47`). Rows are identified by `item.name`, then `item.id`, then position (`ListRows.vue:124-136`): when `name` is a display field, set `row-key` (frappe-ui's own Accounting recipe shows «1 selected» with no box ticked because of it).
-- `SidebarItem` is active only on an exact route-name match: pass `:active` for nested routes (`Sidebar/SidebarItem.vue:246`).
+- `SidebarItem` is active only on an exact route-name match: pass `:active` for nested routes (`Sidebar/SidebarItem.vue:216`).
 - `Tree`: a click anywhere on a row toggles it; there is no select event; it never changes `nodes` on drop — apply `drag-end` yourself (`Tree/TreeItem.vue:28`, `useTreeDragDrop.ts:38`). Its `<ul>` keydown eats Enter/Space/arrows/Home/End and runs typeahead for any control inside a row, toggling the tree's focused row, not the control's (`useTreeKeyboard.ts:64-108`): slot controls need `@click.stop @keydown.stop`.
 - `Checkbox` emits `true`/`false`, never 1/0 (`Checkbox.vue:105`); `MultiSelect` drops plain-string options (`MultiSelect/utils.ts:48`); `Combobox` never commits typed text (`Combobox.vue:340`); `DatePicker` clears to `''`, `DateRangePicker` to `[]` (`DatePicker.vue:239`).
 - `TextInput` always emits strings (`v-model.number`), reads `debounce` once (`TextInput.vue:281`), and binds `:value`: a parent that trims or rewrites the model (a URL-synced search) eats the trailing space being typed — keep a local ref (`TextInput.vue:39`).
@@ -104,7 +105,7 @@ Behaviour
 Accessibility and the browser
 - `PageHeaderTitle` renders a `<span>`: a desktop page has no heading element unless you write one (`PageHeader/PageHeaderTitle.vue:2`).
 - `Textarea` text is 13px at every size, `TextInput` 14px below `lg`: under 16px iOS zooms on focus — mobile forms use `size="lg"` (`Textarea.vue:77-80`, `TextInput.vue:103-106`).
-- `dialog.*` puts the confirm button first in tab order (`utils/dialog.ts:389`): a destructive confirm needs its words to name the object and the consequence.
+- `dialog.*` puts the confirm button first in tab order (`utils/dialog.ts:388`): a destructive confirm needs its words to name the object and the consequence.
 - `TextInput` sets `autocomplete="off"` by default (`TextInput.vue:47`): login, e-mail and address fields set it.
 - Nothing sets the page's CSS `color-scheme`: native scrollbars stay light in dark mode unless the app sets it.
 - Text people must read uses `text-ink-gray-6` or darker; `ink-gray-5` is for meta only, `ink-gray-4` for placeholders and disabled (contrast computed in design-sources.md).
@@ -113,7 +114,7 @@ Found while redesigning a large app (first pass)
 - `Badge` themes are only `gray`, `blue`, `green`, `amber`, `red`, `violet`: `theme="orange"` falls back to gray silently (`Badge/types.ts:3`, `Badge.vue:94`).
 - `Button` has no `link` prop: `:link="url"` renders a button that does nothing — use `:href` or `route` (`Button/types.ts`).
 - `useKeyboardShortcut` matches punctuation by the physical key: `Slash`/`Shift+Slash` never fire on an Italian keyboard (where «/» is Shift+7); give such shortcuts a letter key too.
-- `SidebarRailItem` folds an English «N unread» into its accessible name, not overridable (`SidebarRail/SidebarRailItem.vue:152`): say the count yourself elsewhere for a non-English app.
+- `SidebarRailItem` folds an English «N unread» into its accessible name, not overridable (`SidebarRail/SidebarRailItem.vue:139`): say the count yourself elsewhere for a non-English app.
 - `Breadcrumbs` gives no `aria-current` on the last crumb: wrap it in `<nav aria-label>` and mark the current page yourself.
 - Inside your own `<form>`, a plain `<button>` without `type` submits it; frappe-ui's `Button` passes its `type` prop through (`Button.vue:266`) — set `type="button"` on acts that must not submit.
 
@@ -121,26 +122,35 @@ Found while redesigning a large app (later passes)
 - `Button`'s `label` wins over an `aria-label` attribute (`Button/Button.vue:347`): to name a text button after its row («Remind PO-…»), put the visible word in the default slot and the row's name in `aria-label`.
 - `Progress` without `label` is announced as the English «Progress» (`Progress/Progress.vue:101`) and extra attributes land on its wrapper: give it `label`, or `aria-hidden` when the figures beside it say the same.
 - `DatePicker` (via `shared/picker/PickerShell.vue:15`) puts extra attributes on a wrapper div, not the input: `aria-label` never reaches it — use its `label` prop or `id` with `<label for>`.
-- The semantic colour families are wired per utility — `ink` for text, `surface` for backgrounds and gradients, `outline` for borders (`tailwind/plugin.js:249-275`) — not into `colors`: `decoration-outline-*`, `decoration-ink-*`, `ring-ink-*` produce no CSS. Use `decoration-[color:var(--outline-gray-3)]`.
+- The semantic colour families are wired per utility — `ink` for text, `surface` for backgrounds and gradients, `outline` for borders (`tailwind/plugin.js:271-297`) — not into `colors`: `decoration-outline-*`, `decoration-ink-*`, `ring-ink-*` produce no CSS. Use `decoration-[color:var(--outline-gray-3)]`.
 - `ListHeaderCell` has no `align` prop (`molecules/list/ListHeaderCell.vue`): `align="end"` becomes a dead HTML attribute — use `class="justify-end"` (only `ListHeaderCellSort` aligns).
 - A `Dropdown` group heading is `text-ink-gray-4` (`Menu/utils.ts:23`): fine for a label, too faint for a sentence — use `hideLabel` and say it elsewhere.
 - Underline `Tabs` never scroll on their own: on a phone wrap the tab row in a horizontal `ScrollArea` or the page scrolls sideways.
 - `Accordion` lives in `frappe-ui/experimental` (`experimental/Accordion`): slots `item-label`, `item-suffix`, `item-content` (props `{ item, index }`); its model is `string | string[] | undefined`; its trigger's focus ring is the weak `ring-outline-gray-3` (`Accordion.vue:73`) — add `focus-visible:focus-ring`.
-- `SettingsRow` (`SettingsDialog/SettingsRow.vue`) works on its own on a settings page, not only inside `SettingsDialog`.
+- `SettingsRow` (`SettingsDialog/SettingsRow.vue`) works on its own on a settings page, not only inside `SettingsDialog`; a description with a link goes in its `#description` slot (new in 1.2.0, `SettingsRow.vue:12-17`), the `description` prop is plain text.
 - frappe-ui already draws a focus outline on every focused element (`tailwind/plugin.js:164-171`, `focus-visible:outline-none` removes it): add a ring only where something removed it.
 - A menu option's `description` is cut to one line (`Menu/MenuItemContent.vue:173`) and the keyboard skips disabled items: a reason written there is never heard — say why outside the menu.
 - `RadioGroup` takes no focus itself and draws hidden native inputs: a «focus the first empty field» search picks the hidden input or nothing — focus the chosen option, or the first.
 - `PageHeaderMobile` caps `#suffix` at 35% and insets the centred title by the widest side (`PageHeader/PageHeaderMobile.vue`): a labelled button there cuts the title to a few letters — on a phone put wide acts in the page's first row, keep the bar for an icon or a short word.
 - `v-model` on a writable `computed`: the setter must accept what the component emits (`TabButtons` gives `string | number`, `Accordion` `string | string[]`), or vue-tsc flags it.
 
-Words frappe-ui writes in English whatever the app's language (no translation hook in 1.1.0)
+Words frappe-ui writes in English whatever the app's language (no translation hook in 1.2.0)
 - `Dialog`'s × button is labelled «Close» (`Dialog/Dialog.vue:90,145`): screen readers say it in English.
 - `MultiSelect` writes «N selected», «Clear All», «Select All» (`MultiSelect.vue:188,615-628`): override with the `#summary` and `#footer` slots (slot props `clear`, `selectAll`).
 - `Select`'s default placeholder «Select option» and empty list «No options» (prop `emptyText`, `Select/Select.vue:67`), `Combobox`'s empty texts: always pass your own `placeholder` and empty words.
 - `Combobox` with `:loading` writes «Loading...» with no prop or slot to replace it (`Combobox/ComboboxResults.vue:118`): for a non-English app, show the search state in the empty text instead, or accept the word.
 - Typography: a bare `text-sm`/`text-base` already sets its weight (420); `font-normal` beside it changes it to 400 — never add it.
 
-Names that do not exist in 1.1.0 (from older docs or habits): `Dialog`'s `options` prop, `TabContent` (it is `TabPanel`), `dialog.alert`, a `pageMeta` option (use `usePageMeta`), `fileUploadHandler` (it is the class `FileUploadHandler`); `useInputLabeling`, `InputLabel`, `InputError` only from `frappe-ui/experimental`; `TextEditor` is the deprecated v0 editor.
+Names that do not exist in 1.2.0 (from older docs or habits): `Dialog`'s `options` prop, `TabContent` (it is `TabPanel`), `dialog.alert`, a `pageMeta` option (use `usePageMeta`), `fileUploadHandler` (it is the class `FileUploadHandler`); `useInputLabeling`, `InputLabel`, `InputError` only from `frappe-ui/experimental`; `TextEditor`, `TextEditorFixedMenu`, `TextEditorBubbleMenu`, `TextEditorFloatingMenu`, `TextEditorContent`, `createEditorButton`, `ImageExtension`, `createSuggestionExtension` (the v0 editor, removed from `frappe-ui/experimental` in 1.2.0: the import fails at build time — use `frappe-ui/editor`).
+
+Changed in 1.2.0 (code written for 1.1.0 may now behave differently)
+- `truncate` clips only sideways: `overflow-x: clip` plus `min-width: 0; min-height: 0`, in the components layer, so utilities on the element win (`tailwind/plugin.js:201-219,238,251`). `truncate` with `leading-none` no longer cuts descenders; an element that relied on `truncate` to clip extra lines vertically, or an inline-block `truncate` that must keep its old vertical position, needs `overflow-hidden` too.
+- `SidebarItem`, `SidebarRailItem`, `MobileNavItem` (`shared/navLink.ts:30-36`), `Breadcrumbs` (`Breadcrumbs.vue:42`), `ListRow` (`molecules/list/ListRow.vue:18`) and `CommandPaletteItem` (`experimental/CommandPalette/CommandPaletteItem.vue:17,181-183`) render an `href` only when it is relative or `http`, `https`, `mailto`, `tel` (`utils/url-safety.ts:14,24-31`). A `slack:`, `zoommtg:` or `webcal:` link renders an `<a>` with no `href`, silently: open it from a click handler. `Button` and `TabButtons` still pass `href` unchecked (`Button/Button.vue:254-258`, `TabButtons/TabButtons.vue:305-307`), and `safeHref` is not exported.
+- `Tooltip` and `HoverCard` mount on the first hover or focus of the trigger (`shared/deferredTrigger.ts`): the trigger is rendered again then, so its element is replaced and components inside it are created anew (focus and text selection are carried over, `deferredTrigger.ts:17-19`). Keep no state in the trigger that must survive it, and do not hold on to its element (template refs follow the new one). On touch a `Tooltip` never mounts; a `HoverCard` mounts when a tap focuses it, or at once when opened through `v-model:open` or its exposed `open()` (`HoverCard/HoverCard.vue:77-88`).
+- `dialog.prompt` loads `FormControl` on first use (`utils/dialog.ts:448-457`): the first prompt joins the stack after that import, and one `close()`d before it lands never shows (`utils/dialog.ts:726-731`).
+- `DatePicker`, `DateTimePicker`, `DateRangePicker` with a `format` read typed numbers in that format's order (`3/11/26` under `DD-MM-YYYY` = 3 November) and no longer rewrite the value on a focus and blur without an edit (inputs.md §17).
+- The v0 `TextEditor` family is gone from `frappe-ui/experimental` (`experimental.ts`); `frappeTypes` finds doctype files in one walk that skips `node_modules` and dot folders (`vite/doctypeInterfaceGenerator.js:227-268`); an editor embed pointing at the app's own origin is refused even when allowlisted (`molecules/editor/extensions/iframe/iframe-allowlist.ts:101`).
+- frappe-ui no longer depends on `tippy.js` or `@tiptap/starter-kit` (root `package.json`): an app that imported either without declaring it must add it.
 
 ## Reference files
 
@@ -155,9 +165,9 @@ Names that do not exist in 1.1.0 (from older docs or habits): `Dialog`'s `option
 | [navigation.md](references/navigation.md) | Provider, shells, sidebar and rail, mobile nav, page header, tabs, tree, scroll area, page meta, shortcuts |
 | [list.md](references/list.md) | `frappe-ui/list`: parts, selection, active row, sorting, groups, virtual rows, a full list page |
 | [data.md](references/data.md) | useCall, useList, useDoc, useDoctype, useNewDoc; the frozen v1 resources; caching; errors |
-| [setup-and-tokens.md](references/setup-and-tokens.md) | Package entries, vite plugins, the Tailwind preset and every token, dark mode, fonts |
+| [setup-and-tokens.md](references/setup-and-tokens.md) | Package entries, vite plugins, the Tailwind preset and every token, dark mode, fonts; Vitest, vue-tsc, Prettier, symlinked apps, `@framework/ui` (§16) |
 | [charts.md](references/charts.md) | `frappe-ui/charts`: every chart, data shapes, ChartCard, palettes |
-| [editors.md](references/editors.md) | `frappe-ui/editor`, `frappe-ui/code-editor`, `frappe-ui/experimental`, `frappe-ui/icons` |
+| [editors.md](references/editors.md) | `frappe-ui/editor`, `frappe-ui/code-editor`, `frappe-ui/experimental` (with `CommandPalette`), `frappe-ui/icons` |
 
 ## More gotchas found in a real app
 
@@ -168,9 +178,20 @@ Names that do not exist in 1.1.0 (from older docs or habits): `Dialog`'s `option
 - «Phone» should be one test across the app, e.g. `useBreakpoints(breakpointsTailwind).smaller('md')` from VueUse, used by the shell and by every page, so a page switches layout together with its shell.
 - After a change: `vue-tsc --noEmit` (a `TS2304 Cannot find name` is a page that will not open), build, then look at the screen rendered as a real user with a real role, desktop and phone width.
 
+## Found while building a Frappe v16 app on 1.2.0
+
+- `CommandPaletteItem` (`frappe-ui/experimental`) draws `#prefix` flush against the label, no gap (`experimental/CommandPalette/CommandPaletteItem.vue:16-26`); frappe-ui's own story gives the icon `mr-3 size-4 text-ink-gray-7` (`experimental/CommandPalette/stories/Default.vue:74`). When a slot's spacing is not obvious, copy it from the component's stories — in the repo only: the npm package leaves out `**/stories` (`package.json` `files`).
+- frappe-ui's own skill (`skills/frappe-ui`) is not in the npm package either: fetch it from the repo at the tag you run.
+- `call()` always POSTs (`utils/call.ts:29-32`): a method whitelisted with `methods=["GET"]` answers 403. Use `frappeRequest({ url, method: 'GET', params })` (GET params go through `String()`, so scalars only, `utils/request.ts:43-48`) or `useCall` on `/api/v2/method/…` (GET by default) — data.md §12.
+- Vitest in Node: importing `frappe-ui` fails with «Cannot find module …/src/resources/resources imported from …/src/resources/plugin.js» — Vitest hands frappe-ui's `.js` files to Node, which wants extensions (`resources/plugin.js:2`). Mock `frappe-ui` in tests of app logic, or inline it (setup-and-tokens.md §16).
+- vue-tsc: an import from `frappe-ui/experimental` type-checks its whole barrel; with the usual `declare module '*.vue'` shim in `env.d.ts`, the twelve `@ts-expect-error` lines of `experimental/ListView/index.ts:2-24` go unused → `TS2578` errors from `node_modules`. Drop the shim, or map `frappe-ui/experimental` to the folder you use in `tsconfig` `paths` (setup-and-tokens.md §16).
+- `frappe-ui/vite` finds the app and the bench by walking up from the frontend folder: in an app symlinked into `apps/` from elsewhere it finds no bench, and `vite build` throws «indexHtmlPath is required» (`vite/buildConfig.js:14-21,54-58`, `vite/utils.js:27-49`). Pass `buildConfig: { outDir, indexHtmlPath, baseUrl }`, or set `FRAPPE_BENCH_PATH`.
+- Prettier reads the app's root `.editorconfig` (the bench app template sets `indent_style = tab`, `indent_size = 4`, `max_line_length = 99` for `*.js,*.vue,*.css`) and reformats the frontend with tabs unless `.prettierrc` sets `useTabs: false` — and `tabWidth: 2`, or it indents by 4.
+- Frappe v16's shared Vue package `@framework/ui` (`apps/frappe/ui`) is not frappe-ui but sits on it: it needs `frappeui({ lucideIcons: true })`, its own Vite plugin, and a type stub (setup-and-tokens.md §16).
+
 ## The slot scanner
 
-`scripts/slotscan.cjs` lists, for every `.vue` file under `src/`, the loose children of a component that has no default slot and every `<template #name>` for a slot the component does not declare. Slots are read from frappe-ui's own source (`SlotsType` included) and from the app's components by their import path (`@/` is read as `src/`). Run it from the app's frontend folder (needs `@vue/compiler-sfc`, which every Vue app already has):
+`scripts/slotscan.cjs` lists, for every `.vue` file under `src/`, the loose children of a component that has no default slot and every `<template #name>` for a slot the component does not declare. Slots are read from frappe-ui's own source (`SlotsType` included, family parts such as `SettingsRow` or `SidebarItem` too) and from the app's components by their import path (`@/` is read as `src/`). Run it from the app's frontend folder (needs `@vue/compiler-sfc`, which every Vue app already has):
 
 ```bash
 NODE_PATH=$PWD/node_modules node -e "require('module').Module._initPaths(); require('/path/to/frappe-ui-screens/scripts/slotscan.cjs')"

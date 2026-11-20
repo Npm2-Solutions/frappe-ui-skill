@@ -36,8 +36,12 @@ function slotsOf(file) {
   } catch { out = null }
   slotCache.set(file, out); return out
 }
+// Family members live in their family's folder (`SettingsDialog/SettingsRow.vue`, `Sidebar/SidebarItem.vue`).
+let fuiDirs = null
 function fuiFile(tag) {
   for (const base of [path.join(FUI, 'components', tag, tag + '.vue'), path.join(FUI, 'molecules/list', tag + '.vue')]) if (fs.existsSync(base)) return base
+  if (!fuiDirs) { try { fuiDirs = fs.readdirSync(path.join(FUI, 'components'), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name) } catch { fuiDirs = [] } }
+  for (const dir of fuiDirs) { const f = path.join(FUI, 'components', dir, tag + '.vue'); if (fs.existsSync(f)) return f }
   return null
 }
 let hits = 0

@@ -1,6 +1,6 @@
 # frappe-ui-screens — an Agent Skill for building app screens with frappe-ui
 
-An Agent Skill ([what skills are](https://github.com/anthropics/skills)) that teaches a coding agent (Claude Code, or any tool that loads `SKILL.md` skills) to build and review Vue screens with [frappe-ui](https://github.com/frappe/frappe-ui) **1.1.0** — lists, record pages, forms, dialogs, shells and sidebars, tabs, trees, menus, toasts, charts, editors — and to fetch Frappe data with `useCall`, `useList`, `useDoc`, `useDoctype` and `useNewDoc`.
+An Agent Skill ([what skills are](https://github.com/anthropics/skills)) that teaches a coding agent (Claude Code, or any tool that loads `SKILL.md` skills) to build and review Vue screens with [frappe-ui](https://github.com/frappe/frappe-ui) **1.2.0** — lists, record pages, forms, dialogs, shells and sidebars, tabs, trees, menus, toasts, charts, editors — and to fetch Frappe data with `useCall`, `useList`, `useDoc`, `useDoctype` and `useNewDoc`.
 
 frappe-ui mistakes usually fail silently: a class that produces no CSS, a slot that is never drawn, a `useCall` that returns `null` with no error. Everything here was read from frappe-ui's own source, and every gotcha cites the file and line, so the agent can check it instead of guessing.
 
@@ -11,7 +11,7 @@ frappe-ui mistakes usually fail silently: a class that produces no CSS, a slot t
 | `SKILL.md` | How to work, the contracts true across the library, the house style, which component for what, the gotchas that fail silently |
 | `references/inputs.md`, `display.md`, `overlays.md`, `navigation.md`, `list.md` | Every component's props, slots, events and option shapes, with `file:line` |
 | `references/data.md` | The v2 data composables, the frozen v1 resources, caching, errors, dates |
-| `references/setup-and-tokens.md` | Package entries, Vite plugins, the Tailwind preset and every semantic token, dark mode |
+| `references/setup-and-tokens.md` | Package entries, Vite plugins, the Tailwind preset and every semantic token, dark mode; Vitest, vue-tsc, Prettier and symlinked-app traps; Frappe v16's `@framework/ui` |
 | `references/charts.md`, `editors.md` | `frappe-ui/charts`, `frappe-ui/editor`, `frappe-ui/code-editor`, `frappe-ui/experimental` |
 | `references/recipes.md` + `assets/recipes/` | frappe-ui's eight full recipe screens (mail, tickets, deals, accounting, files, tasks, discussions, compose), desktop and mobile, with screenshots |
 | `references/design.md` | UI/UX rules for app screens, written in frappe-ui's tokens and components: principles, a composition per screen type, a review checklist, what not to do |
@@ -32,11 +32,11 @@ The agent loads it when a task touches a frappe-ui screen; you can also ask for 
 
 ## How it relates to frappe-ui's own skill
 
-frappe-ui ships a short skill of its own in its repo (`skills/frappe-ui`: core rules, data, setup). This one goes further — every component's API read from source, the gotchas, the recipes walked through, design rules for app screens — and cites frappe-ui's skill where it agrees. It has a different name, so both can be installed side by side.
+frappe-ui keeps a short skill of its own in its repo (`skills/frappe-ui`: `SKILL.md`, `CORE.md` with the core rules, `DATA.md`, `SETUP.md`, plus evals). It is not in the npm package: take it from the repo at the tag you run (`git clone --depth 1 --branch v1.2.0 https://github.com/frappe/frappe-ui` and copy `skills/frappe-ui`). In 1.2.0 it changed only one line (the v0 `TextEditor` is gone). This one goes further — every component's API read from source, the gotchas, the recipes walked through, design rules for app screens, what changed in 1.2.0, the tooling traps of a real Frappe v16 app — and cites frappe-ui's skill where it agrees. It has a different name (`frappe-ui-screens`), so both can be installed side by side.
 
 ## Version
 
-Written against frappe-ui **1.1.0**. Later versions may change props, slots and line numbers: where this skill and the installed code disagree, the code wins.
+Written against frappe-ui **1.2.0** (updated from 1.1.0: «Changed in 1.2.0» in `SKILL.md` lists what moved). Later versions may change props, slots and line numbers: where this skill and the installed code disagree, the code wins.
 
 ## Licence and credits
 

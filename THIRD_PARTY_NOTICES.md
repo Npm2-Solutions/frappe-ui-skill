@@ -1,6 +1,6 @@
 # Third-party notices
 
-The screenshots in `assets/recipes/` show the recipe screens of frappe-ui (`docs/components/recipes/` in https://github.com/frappe/frappe-ui, tag v1.1.0), rendered as they ship. The references cite frappe-ui source files by `file:line`. frappe-ui is distributed under this licence:
+The screenshots in `assets/recipes/` show the recipe screens of frappe-ui (`docs/components/recipes/` in https://github.com/frappe/frappe-ui), rendered as they ship at tag v1.1.0; their layouts are unchanged at v1.2.0, the tag the references cite. The references cite frappe-ui source files by `file:line`. frappe-ui is distributed under this licence:
 
 ```
 The MIT License (MIT)

@@ -1,4 +1,4 @@
-# Data fetching (frappe-ui 1.1.0)
+# Data fetching (frappe-ui 1.2.0)
 
 What is in this file: every way frappe-ui talks to a Frappe server — the v2 composables (`useCall`, `useList`, `useDoc`, `useDoctype`, `useNewDoc`), their internals (`useAction`, `useIsolatedCall`, `useFrappeFetch`, `docStore`/`listStore`/`idbStore`, `writeGate`), the frozen v1 resources (`createResource`, `createListResource`, `createDocumentResource`) and the plain transports (`call`, `frappeRequest`, `request`). Source: `src/data-fetching/`, `src/resources/`, `src/utils/{call,frappeRequest,request,config,plugin}.ts`.
 
@@ -49,7 +49,7 @@ Exports from `frappe-ui` (`src/data-fetching/index.ts`, `src/resources/index.ts`
 | Realtime | none | `realtime: true` + a `$socket` on the component instance (`listResource.js:267`, `documentResource.js:270`) |
 | Dates | Frappe sends datetimes as naive strings in the site's time zone: show them through `dayjsLocal(s)` (needs `setConfig('systemTimezone')`, [setup-and-tokens.md «Dates»](setup-and-tokens.md#dates-dayjs-dayjslocal-dayjssystem-srcutilsdayjsts)) | same |
 
-**Showing a server error.** The body's `errors[0].message` is what `frappe.throw` was given and may hold HTML (`frappe.bold` → `<strong>`). `ErrorMessage` — also what `dialog.*` uses for a rejected `onConfirm` (utils/dialog.ts:272-281, :435) — shows the whole `"ValidationError: …"`, HTML rendered (sanitised). For words a person reads, strip the type and the tags:
+**Showing a server error.** The body's `errors[0].message` is what `frappe.throw` was given and may hold HTML (`frappe.bold` → `<strong>`). `ErrorMessage` — also what `dialog.*` uses for a rejected `onConfirm` (utils/dialog.ts:271-280, :434) — shows the whole `"ValidationError: …"`, HTML rendered (sanitised). For words a person reads, strip the type and the tags:
 ```ts
 import { FrappeResponseError } from 'frappe-ui'
 export function serverMessage(e: unknown, fallback: string): string {
@@ -364,7 +364,7 @@ Gotcha: instances are cached globally by `[doctype, name]` — a second call ret
 
 ## 12. Transports and config
 
-`call(method, args = {}, { headers?, onError? })` (`call.ts`) — POST through `frappeRequest`, resolves `message`. `onError({ response, status, error })` fires only for HTTP errors, not network failures.
+`call(method, args = {}, { headers?, onError? })` (`call.ts`) — POST through `frappeRequest`, resolves `message`. `onError({ response, status, error })` fires only for HTTP errors, not network failures. It always POSTs, with no option to change it (`call.ts:29-32`): a method whitelisted with `@frappe.whitelist(methods=["GET"])` answers 403 (Frappe `handler.py` `is_valid_http_method`). For those use `frappeRequest({ url: 'app.api.fn', method: 'GET', params })` — params go through `String()` into the query (`request.ts:43-48`), so pass scalars or JSON-encode — or `useCall({ url: '/api/v2/method/app.api.fn', params })` (GET by default, objects JSON-encoded).
 
 `frappeRequest(options)` (`frappeRequest.ts`) — options: `url`, `method` (**default `POST`**), `params`, `headers`, `responseType`, `signal`, `credentials`, `onError`, `onServerMessages`. Prefixes `/api/method/`, adds `requestBaseUrl` (+ `credentials: 'include'`), merges `requestHeaders`, prints `exc` debug, passes `_server_messages` to `setConfig('serverMessagesHandler')` or `onServerMessages`. Non-2xx → `FrappeResourceError` whose `messages` are the parsed `_server_messages` + `message`, else `_error_message`, else `'Internal Server Error'`.
 
@@ -386,3 +386,4 @@ Gotcha: instances are cached globally by `[doctype, name]` — a second call ret
 8. `useList` filters: object form only; `like` with an empty value drops the filter (`utils.ts:38-50`).
 9. v2 error = `FrappeResponseError` (`instanceof` ok, `.message` = `"<type>: <message>"`, may hold HTML — `serverMessage()` in §2); v1 error = `FrappeResourceError` (`.messages[]`, no `instanceof`).
 10. A failed `useCall` reload blanks `data` (VueUse `dist/index.js:3808`) and `staleOnError` does not apply to server errors — keep the last good value in `onSuccess`; `useList`/`useDoc` keep theirs.
+11. `call()` is POST only (`call.ts:31`): GET-only whitelisted methods need `frappeRequest({ method: 'GET' })` or `useCall` on `/api/v2/method/…` (§12).

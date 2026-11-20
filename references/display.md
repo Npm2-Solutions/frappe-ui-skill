@@ -1,4 +1,4 @@
-# Display components and icons — frappe-ui 1.1.0
+# Display components and icons — frappe-ui 1.2.0
 
 Components that show things rather than take input, plus how icons work end to end: `lucide-*` classes, the `Icon` component, `icon` props, and the `~icons` Vite plugin. Read from `src/components/*`, `src/utils/iconString.ts`, `tailwind/` and `vite/`. Paths are relative to `node_modules/frappe-ui/`.
 
@@ -122,12 +122,12 @@ import LucidePlus from '~icons/lucide/plus'      // explicit import
 - `lucideIcons: { componentGlobs: [...] }` limits which files are scanned for auto-imports.
 - For the resolver only, without auto-imports: `import { lucideIconsPlugin } from 'frappe-ui/vite/lucideIconsPlugin'`. Then `~icons/lucide/x` resolves, but `<LucideX/>` without an import does not.
 - What the generated component renders: `<svg width="24" height="24" stroke="currentColor" stroke-width="1.5">` with your attributes spread on it, so size it with a class (vite/lucideIconsPlugin.js:101–129).
-- Names: lucide's export names, converted to kebab-case. Both digit spellings resolve: `bar-chart-2` and `bar-chart2` (lucideIconsPlugin.js:156).
+- Names: lucide's export names, converted to kebab-case. Both digit spellings resolve: `bar-chart-2` and `bar-chart2` (vite/lucideIconsPlugin.js:127-144).
 - A missing name renders a placeholder "circle-help" SVG with `data-lucide-missing="<name>"`, and the build logs a warning (lucideIconsPlugin.js:59–68).
 
 ### 1e. Other icon sources
 - `frappe-ui/icons` exports a few Frappe SVG components: `CircleCheckIcon`, `DownSolidIcon`, `GreenCheckIcon`, `HelpIcon`, `LightningIcon`, `MaximizeIcon`, `MinimizeIcon`, `StepsIcon` (icons/index.ts).
-- Sprite icons (`experimental/SpriteIcons`) are parked and scheduled for removal (experimental.ts:83). Do not build on them.
+- Sprite icons (`experimental/SpriteIcons`) are parked and scheduled for removal (experimental.ts:62). Do not build on them.
 
 ---
 
@@ -220,7 +220,7 @@ Prop: `items: BreadcrumbItem[]`, each `{ label: string, route?: RouteDestination
 
 Each item renders as:
 - `route` → `<router-link>`;
-- `href` → `<a>` (a plain left click runs `onClick` instead, if one is set);
+- `href` → `<a>` (a plain left click runs `onClick` instead, if one is set); since 1.2.0 the `href` is kept only when relative or `http`/`https`/`mailto`/`tel` (Breadcrumbs.vue:42, src/utils/url-safety.ts:24-31), any other scheme leaves an `<a>` without one;
 - neither → a `<button>` that runs `onClick`.
 
 ```vue
@@ -228,7 +228,7 @@ Each item renders as:
 ```
 
 **Gotchas**
-- It requires vue-router: it calls `useRouter()` and renders `<router-link>` (Breadcrumbs.vue:104).
+- It requires vue-router: it calls `useRouter()` and renders `<router-link>` (Breadcrumbs.vue:105).
 - Crumbs are keyed by `label`, so two crumbs with the same label collide (Breadcrumbs.vue:19).
 - When the trail overflows and has more than two items, all but the last two move into a "…" dropdown (Breadcrumbs.vue:3). In that menu an item with only `href` does nothing; give it `onClick` or `route`.
 - It adds no `<nav>` landmark and no `aria-current`. Wrap it in `<nav aria-label="Breadcrumb">` yourself.
@@ -359,7 +359,7 @@ Props: `as` (`'div'`, any tag or component), `size` (`InputSize`, `'sm'`), `acti
 ```
 
 **Gotchas**
-- **No hover of its own**: it styles rest, active/selected (`bg-surface-gray-3`) and disabled only (ItemListRow.vue:33-41); in menus the highlight comes from the menu item around it. Used `as="button"` on its own, add `hover:bg-surface-gray-2` and keep the focus ring — or do what the recipes' sheets do: a raw `<button class="flex w-full items-center gap-2 rounded-6 px-3 py-2.5 text-left" :class="active ? 'bg-surface-gray-3' : 'hover:bg-surface-gray-2'">` (recipe:FilesMobile.vue:681-688, MailMobile.vue:628-635).
+- **No hover of its own**: it styles rest, active/selected (`bg-surface-gray-3`) and disabled only (ItemListRow.vue:33-41); in menus the highlight comes from the menu item around it. Used `as="button"` on its own, add `hover:bg-surface-gray-2` and keep the focus ring — or do what the recipes' sheets do: a raw `<button class="flex w-full items-center gap-2 rounded-6 px-3 py-2.5 text-left" :class="active ? 'bg-surface-gray-3' : 'hover:bg-surface-gray-2'">` (recipe:FilesMobile.vue:679-686, MailMobile.vue:628-635).
 - `disabled` only mutes the row. It neither stops clicks nor sets the `disabled` attribute, so skip the action in your handler.
 - `active` and `selected` look the same, and the row tracks neither; you drive both.
 - It sets no role. Add `role="option"` and `aria-selected` yourself inside a listbox.

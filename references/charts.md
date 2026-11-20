@@ -1,4 +1,4 @@
-# Charts — `frappe-ui/charts` (frappe-ui 1.1.0)
+# Charts — `frappe-ui/charts` (frappe-ui 1.2.0)
 
 What is in this file: the eleven chart components, the four chrome parts (`ChartCard`, `ChartContainer`, `ChartLegend`, `ChartTooltip`), `useChart`/`useChartTokens`/`paletteColors`, their props, data shapes, events, slots, colors and theming. Source: `src/charts/` (`types.ts` is the prop source of truth; `docs/*.md` are the docs), `src/charts/style.css`, `core/useChart.ts`, `tokens.ts`.
 

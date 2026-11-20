@@ -1,6 +1,6 @@
-# Navigation and app shell — tabs, tree, sidebar, rail, shells, headers, shortcuts (frappe-ui 1.1.0)
+# Navigation and app shell — tabs, tree, sidebar, rail, shells, headers, shortcuts (frappe-ui 1.2.0)
 
-How a screen is framed and moved through, read from `src/` of frappe-ui 1.1.0. `file:line` is relative to `src/components/` unless it starts with `utils/`, `composables/` or `index.ts`.
+How a screen is framed and moved through, read from `src/` of frappe-ui 1.2.0. `file:line` is relative to `src/components/` unless it starts with `utils/`, `composables/` or `index.ts`.
 
 Sections: [App frame at a glance](#app-frame-at-a-glance) · [FrappeUIProvider](#frappeuiprovider) · [DesktopShell](#desktopshell) · [MobileShell](#mobileshell) · [MobileNav / MobileNavItem](#mobilenav--mobilenavitem) · [Sidebar family](#sidebar-family) · [SidebarRail / SidebarRailItem](#sidebarrail--sidebarrailitem) · [PageHeader family](#pageheader-family) · [Breadcrumbs](#breadcrumbs) · [Tabs (Tabs, TabList, TabTrigger, TabPanel)](#tabs-tabs-tablist-tabtrigger-tabpanel) · [TabButtons](#tabbuttons) · [Tree](#tree) · [ScrollArea](#scrollarea) · [useShellScrolled / shellScrollContainer](#useshellscrolled--shellscrollcontainer) · [usePageMeta](#usepagemeta) · [useKeyboardShortcut](#usekeyboardshortcut)
 
@@ -41,6 +41,8 @@ Sections: [App frame at a glance](#app-frame-at-a-glance) · [FrappeUIProvider](
 ```
 
 The page's `PageHeader` teleports into the shell's header slot above the scroll area; the page body scrolls in the shell's `ScrollArea`.
+
+In a Frappe v16 app, desk-like parts (link fields, form layout, filters, activity timeline) can come from Frappe's own `@framework/ui` (`apps/frappe/ui`), which sits on frappe-ui and needs `frappeui({ lucideIcons: true })`, its own Vite plugin and a type stub: setup-and-tokens.md §16.
 
 ---
 
@@ -88,7 +90,7 @@ Slots: `#rail`, `#sidebar`, `#default` (routed content).
 | `active` | `boolean` — section highlight independent of route | current-route match |
 
 Emits `click`. Slot `#default {active}` replaces the icon. `MobileNav` = equal-width grid, no props.
-**Gotchas** Tapping the item of the current route renders a `<button>` and scrolls the shell to top instead of navigating (MobileNav/MobileNavItem.vue:12, 115). Current = same route **name** (or path when unnamed): child routes are not current.
+**Gotchas** Tapping the item of the current route renders a `<button>` and scrolls the shell to top instead of navigating (MobileNav/MobileNavItem.vue:12, 96). Current = same route **name** (or path when unnamed): child routes are not current. An `href` with another scheme than relative/`http(s)`/`mailto`/`tel` is dropped (1.2.0, shared/navLink.ts:34-35).
 
 ---
 
@@ -126,9 +128,10 @@ Emits `click`. Slot `#default {active}` replaces the icon. `MobileNav` = equal-w
 **Gotchas**
 - Unbound `collapsed` (`null`) auto-collapses below Tailwind `sm`; `collapsible=false` never collapses even if bound true (Sidebar/Sidebar.vue:52).
 - `Sidebar` does not scroll: wrap the item list in `flex-1 overflow-y-auto` yourself.
-- `SidebarItem` active state, when `active` is unset, is **exact** route-name equality (or path when the target has no name) (Sidebar/SidebarItem.vue:246): `/jobs/123` does not light "Jobs". Pass `:active="route.path.startsWith('/jobs')"` for section highlighting.
-- Attr split: `class`, `style`, `on*` listeners stay on the row wrapper; everything else (`target`, `id`, `data-*`, `aria-*`) goes to the inner link/button (SidebarItem.vue:161).
-- Without a router, `route` renders a plain `<a>` with `href` only when `route` is a string (SidebarItem.vue:223-229).
+- `SidebarItem` active state, when `active` is unset, is **exact** route-name equality (or path when the target has no name) (Sidebar/SidebarItem.vue:216): `/jobs/123` does not light "Jobs". Pass `:active="route.path.startsWith('/jobs')"` for section highlighting.
+- Attr split: `class`, `style`, `on*` listeners stay on the row wrapper; everything else (`target`, `id`, `data-*`, `aria-*`) goes to the inner link/button (SidebarItem.vue:153).
+- Without a router, `route` renders a plain `<a>` with `href` only when `route` is a string (shared/navLink.ts:30-36, shared by `SidebarItem`, `SidebarRailItem`, `MobileNavItem`).
+- Since 1.2.0 an `href` (or a string `route` without a router) is rendered only when relative or `http`/`https`/`mailto`/`tel` (shared/navLink.ts:34-35, utils/url-safety.ts:24-31); `slack:`, `zoommtg:`, `webcal:` give a link with no `href` that goes nowhere — open those from `@click`.
 - `icon` strings other than `lucide-*`/emoji render nothing (dev warning) — initials go in `#prefix`.
 - Collapsed items get a right-side tooltip from `label` or the slot's text.
 - `SidebarCard` never hides itself; handle `@dismiss`.
@@ -150,7 +153,7 @@ Emits `click`. Slot `#default {active}` replaces the icon. `MobileNav` = equal-w
 | `variant` | `'subtle'` (filled cell, left bar when active — avatars/workspaces) \| `'ghost'` (transparent — icon shortcuts) | `'subtle'` |
 
 Emits `click`. Slot `#default` (image, avatar, initials). `SidebarRail`: no props, slot `#default`, plain flex (no scroll).
-**Gotchas** Default variant is `subtle` (SidebarRailItem.vue:88) — icon shortcuts look like tiles unless `variant="ghost"`. Rail wraps items in `TooltipProvider :hover-delay="0"` (SidebarRail.vue:8). Attrs go to the clickable cell (SidebarRailItem.vue:85). Badge count is teleported to body. aria-label folds the count in ("Inbox, 3 unread").
+**Gotchas** Default variant is `subtle` (SidebarRailItem.vue:88) — icon shortcuts look like tiles unless `variant="ghost"`. Rail wraps items in `TooltipProvider :hover-delay="0"` (SidebarRail.vue:8). Attrs go to the clickable cell (SidebarRailItem.vue:85). Badge count is teleported to body. aria-label folds the count in ("Inbox, 3 unread"). `href` schemes are filtered as on `SidebarItem` (1.2.0, shared/navLink.ts:34-35).
 
 ---
 
@@ -194,7 +197,7 @@ Prop `items: BreadcrumbItem[]` = `{ label (req), route?, href?, onClick?(event),
 <Breadcrumbs :items="[{ label: 'Jobs', route: { name: 'Jobs' } }, { label: job.title }]" />
 ```
 
-**Gotchas** Crumbs are keyed by `label` (Breadcrumbs/Breadcrumbs.vue:19) — duplicate labels collide. When the row overflows and there are >2 items, all but the last two move into a "…" Dropdown (Breadcrumbs.vue:3); there an `href`-only item does nothing and a `route` item navigates without calling its `onClick`. `href` + `onClick`: plain click runs `onClick` only, modified clicks follow the URL. No `<nav>` landmark — wrap it yourself.
+**Gotchas** Crumbs are keyed by `label` (Breadcrumbs/Breadcrumbs.vue:19) — duplicate labels collide. When the row overflows and there are >2 items, all but the last two move into a "…" Dropdown (Breadcrumbs.vue:3); there an `href`-only item does nothing and a `route` item navigates without calling its `onClick`. `href` + `onClick`: plain click runs `onClick` only, modified clicks follow the URL. Since 1.2.0 `href` passes `safeHref` (Breadcrumbs.vue:42): only relative, `http(s)`, `mailto`, `tel`. No `<nav>` landmark — wrap it yourself.
 
 ---
 
@@ -345,7 +348,7 @@ Props: `orientation='vertical'` (`'vertical'\|'horizontal'\|'both'`), `scrollHid
 usePageMeta(() => ({ title: job.value ? `${job.value.title} · Jobs` : 'Jobs', emoji: '🔧' }))
 ```
 
-**Gotchas** There is no `pageMeta` component option in 1.1.0 (the `FrappeUI` plugin installs no such mixin, utils/plugin.ts) — only the composable. Favicon changes need a `<link rel="icon">` in `index.html` (utils/pageMeta.ts:22). Returning `null` or no `title` changes nothing (utils/pageMeta.ts:48-51): the old title stays after unmount.
+**Gotchas** There is no `pageMeta` component option in 1.2.0 (the `FrappeUI` plugin installs no such mixin, utils/plugin.ts) — only the composable. Favicon changes need a `<link rel="icon">` in `index.html` (utils/pageMeta.ts:22). Returning `null` or no `title` changes nothing (utils/pageMeta.ts:48-51): the old title stays after unmount.
 
 ## useKeyboardShortcut
 

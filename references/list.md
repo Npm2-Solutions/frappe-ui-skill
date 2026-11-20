@@ -1,4 +1,4 @@
-# frappe-ui/list — lists and tables built from parts (frappe-ui 1.1.0)
+# frappe-ui/list — lists and tables built from parts (frappe-ui 1.2.0)
 
 The `frappe-ui/list` molecule (`src/molecules/list/`): every exported part, its props/slots, selection, active row, sorting, columns, groups, virtual rows, and how a list page is composed. `file:line` is relative to `src/molecules/list/`.
 
@@ -91,7 +91,7 @@ const rows = computed(() => [...jobs.value].sort((a, b) =>
   </List>
 </template>
 ```
-While `selectable` is on, a row click toggles the checkbox instead of navigating (ListRow.vue:50) — usually `selectable` is switched on by a "Select" mode button.
+While `selectable` is on, a row click toggles the checkbox instead of navigating (ListRow.vue:57) — usually `selectable` is switched on by a "Select" mode button.
 
 ## Composition of a list page
 
@@ -152,11 +152,11 @@ Rows come from your data layer (the data reference: `useList` and friends; `List
 | ListRow has | Renders |
 |---|---|
 | `route` | `<a>` via `RouterLink custom` (needs vue-router) |
-| `href` | `<a href>` same tab |
-| `@click`/`onClick`, or the List binds `v-model:active` | `<button type=button>` (ListRow.vue:46) |
+| `href` | `<a href>` same tab; since 1.2.0 only a relative, `http(s)`, `mailto` or `tel` href is rendered (ListRow.vue:18), any other leaves an `<a>` that goes nowhere |
+| `@click`/`onClick`, or the List binds `v-model:active` | `<button type=button>` (ListRow.vue:53) |
 | none | `<div>` (static: no hover surface, no padding inset) |
 
-Click order (ListRow.vue:49-62): selection mode with a `value` → toggle only, stop; else if active-tracking → set active; then your `onClick`; then router `navigate`.
+Click order (ListRow.vue:56-69): selection mode with a `value` → toggle only, stop; else if active-tracking → set active; then your `onClick`; then router `navigate`.
 
 **Clickable rows that also hold buttons** (a star, a Dropdown): a link/button row cannot contain buttons. Keep the row static and stretch the open target over it as the first child, controls after it with `relative`. When the row opens a record the target is a real link (`RouterLink`: Ctrl/Cmd-click and "Open in new tab" work), not a `<button @click>`; a `<button>` only when the row does something in place (selects, expands). Restore what a static row lacks — the interactive row's `active:bg-surface-gray-2 sm:rounded-[10px] sm:hover:bg-surface-gray-1` (ListRowBase.vue:12-17), written on the scale as `rounded-5` (= 10px) — and the 0.75rem inset (`list-row-px-3` on the List, style.css:106-127):
 ```vue
@@ -177,7 +177,7 @@ Click order (ListRow.vue:49-62): selection mode with a `value` → toggle only, 
   </ListRows>
 </List>
 ```
-Rows are `position: relative` (style.css:102). Drop the link while `selectable` is on (`v-if="!selecting"`), or a click both navigates and toggles the checkbox (ListRow.vue:49-62). A button repeated on every row names its row in `label` (it becomes the `aria-label`, Button.vue:346) — a screen reader's list of buttons otherwise reads "Actions, Actions, Actions" — and shows the short word in a `Tooltip` around the `Dropdown` (as recipe:TasksDesktop.vue:1055-1069 does). Do not put "Open" in the row's menu: menu `route` items render no `<a>` (overlays.md).
+Rows are `position: relative` (style.css:102). Drop the link while `selectable` is on (`v-if="!selecting"`), or a click both navigates and toggles the checkbox (ListRow.vue:56-69). A button repeated on every row names its row in `label` (it becomes the `aria-label`, Button.vue:347) — a screen reader's list of buttons otherwise reads "Actions, Actions, Actions" — and shows the short word in a `Tooltip` around the `Dropdown` (as recipe:TasksDesktop.vue:1055-1069 does). Do not put "Open" in the row's menu: menu `route` items render no `<a>` (overlays.md).
 
 ## Selection
 

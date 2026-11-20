@@ -1,4 +1,4 @@
-# Editors, experimental and icons (frappe-ui 1.1.0)
+# Editors, experimental and icons (frappe-ui 1.2.0)
 
 What is in this file: the rich-text editor `frappe-ui/editor` (TipTap 3: `Editor`, `useEditor`, `EditorContent`, menus, kits, extensions, mentions, uploads), the code editor `frappe-ui/code-editor` (CodeMirror 6) briefly, what `frappe-ui/experimental` exports and in what state, and `frappe-ui/icons`. Source: `src/molecules/editor/`, `src/molecules/code-editor/`, `experimental.ts`, `experimental/*/index.ts`, `icons/index.ts`.
 
@@ -19,7 +19,7 @@ Sections
 
 ## 1. Rich text: pick the pieces
 
-**For** — comments, descriptions, notes, articles. `TextEditor` (v0, one component with `fixedMenu`/`bubbleMenu` props) is deprecated and parked in `frappe-ui/experimental`; new code uses the composable editor below.
+**For** — comments, descriptions, notes, articles. The v0 `TextEditor` (one component with `fixedMenu`/`bubbleMenu` props) was removed from `frappe-ui/experimental` in 1.2.0 — an import of it fails at build time; use the composable editor below (`docs/content/docs/migration.md`, section Editor).
 **Import** — `import { Editor, EditorContent, EditorFixedMenu, EditorBubbleMenu, EditorFloatingMenu, EditorTableMenu, EditorDropZone, useEditor, RichTextKit, CommentKit, InlineKit, articleToolbar, commentToolbar, minimalToolbar, tableToolbar } from 'frappe-ui/editor'` (importing the entry also loads its CSS, `index.ts:4`).
 
 `<Editor>` is **renderless** (`Editor.vue:112-119`): it owns the TipTap instance, `v-model`, placeholder and upload wiring, and renders only its slot. You place `EditorContent` and any menus inside; they find the editor through provide/inject.
@@ -117,13 +117,15 @@ Exported extensions (`extensions.ts`, `index.ts:42-101`): `StarterKit, EditorDro
 | `/` | `SlashCommands.configure({ items? })` | default: built-in registry; `items: CommandItem[]` (`{ title, icon, group?, isAvailable?, command({ editor, range }) }`) **replaces** it; `false` in a kit removes it |
 | `:` | `Emoji` | built-in list |
 
+`Iframe.configure({ allowlist })` replaces the embed host list (`IFRAME_ALLOWLIST`: YouTube, Vimeo, Figma, Google Docs/Drive, Notion, CodePen…, `extensions/iframe/iframe-allowlist.ts:22`). Since 1.2.0 the check runs on every way content arrives — HTML, JSON `v-model`, `setContent`, a collaborator — and an embed on the app's own origin is refused even when its host is listed (`iframe-allowlist.ts:91-111`): to embed your own pages, link them. Pasted HTML and markdown are parsed in a separate document, so their event handlers never run.
+
 `Mention.component` was removed; use `nodeView` (`mention-extension.ts:203-205`). Without `items` (or `items: null`) the mention node still renders existing mentions, but `@` opens nothing.
 
 ## 6. Uploads
 
 - `UploadFunction = (file: File, options?: { signal?: AbortSignal; onProgress?: (p: { loaded, total, percent }) => void }) => Promise<UploadedMedia>`; `UploadedMedia` needs a safe `file_url` (`media-upload-types.ts`, `media-upload-engine.ts:95-111`).
 - Source order: the extension's own `uploadFunction` (e.g. `Image.configure({ uploadFunction })`) wins over the `Editor`/`useEditor` one (`media-upload-engine.ts:66-90`).
-- No upload function → dropping/pasting/inserting an image, video or file logs `uploadFunction option is not provided` and does nothing (`media-upload-engine.ts:185-187`). The deprecated v0 `TextEditor` had a built-in default (`experimental/TextEditor/TextEditor.vue:92-93`); `Editor` has none.
+- No upload function → dropping/pasting/inserting an image, video or file logs `uploadFunction option is not provided` and does nothing (`media-upload-engine.ts:185-187`). The v0 `TextEditor` (removed in 1.2.0) had a built-in default; `Editor` has none.
 - frappe-ui's `upload(file, { doctype, docname, fieldname, folder, private, signal, onProgress, … })` matches the shape and resolves `{ file_url, file_name, … }`; `private` defaults to **true** (`useFileUpload.ts:34`).
 
 ## 7. Menu items and presets (`menu.ts`)
@@ -173,14 +175,22 @@ loadLanguage('json').then((ext) => (lang.value = ext))
 | `InputLabel`, `InputDescription`, `InputError`, `useInputLabeling`, `inputFontSizeClasses` | internal input parts exposed |
 | `Calendar` (+ `CalendarColorMap`, `CalendarActiveEvent`, `calendarDaySpan`) | parked, API unchanged, until a redesigned calendar |
 | v1 charts `AxisChart`, `DonutChart`, `ECharts`, `FunnelChart`, `NumberChart`, `useAxisChartOptions` (`config` prop) | parked while apps move to `frappe-ui/charts` |
-| `CommandPalette` + `Input`, `List`, `Group`, `Item`, `Empty`, `Footer` | rebuilt family, unstable |
+| `CommandPalette` + `Input`, `List`, `Group`, `Item`, `Empty`, `Footer` | rebuilt family, unstable (below) |
 | `DateCalendar`, `DateRangeCalendar`, `PickerShell` | incubating |
 | `List`/`ListView` + `ListHeader`, `ListHeaderItem`, `ListRows`, `ListRow`, `ListRowItem`, `ListGroups`, `ListGroupHeader`, `ListGroupRows`, `ListSelectBanner`, `ListEmptyState`, `ListFooter` | parked until `frappe-ui/list` reaches parity |
-| `TextEditor`, `TextEditorBubbleMenu`, `TextEditorFixedMenu`, `TextEditorFloatingMenu`, `TextEditorContent`, `createEditorButton`, `ImageExtension`, `createSuggestionExtension` | v0 editor, deprecated (dev warning on mount), deletion human-gated |
 | `ThemeSwitcher` | deprecated (`warnDeprecated`): use `Select` + `useColorScheme` |
 | `Icon`, `IconPicker`, `spritePlugin` (sprite icons) | parking spot, "will be removed"; `Icon` warns when the sprite is missing |
 
+Gone in 1.2.0: `TextEditor`, `TextEditorBubbleMenu`, `TextEditorFixedMenu`, `TextEditorFloatingMenu`, `TextEditorContent`, `createEditorButton`, `ImageExtension`, `createSuggestionExtension` and their types (the v0 editor; parked here in 1.0.0 and 1.1.0). `IconPicker` now draws its icons in theme ink, so they show in dark mode.
+
 Name clashes: experimental `Icon` ≠ root `Icon`; experimental `List` ≠ `frappe-ui/list` `List`; experimental `DonutChart`/`FunnelChart` ≠ `frappe-ui/charts` ones.
+
+The subpath is one barrel: importing any name type-checks every folder, and with a `declare module '*.vue'` shim in the app vue-tsc reports `TS2578` from `experimental/ListView/index.ts:2-24` — workarounds in setup-and-tokens.md §16.
+
+**CommandPalette** (`experimental/CommandPalette/`, docs in its `CommandPalette.md`): `CommandPalette v-model:open @select` > `CommandPaletteInput`, `CommandPaletteList` > `CommandPaletteGroup label` > `CommandPaletteItem :value`, then `CommandPaletteEmpty`, `CommandPaletteFooter` beside the list. It registers no shortcut: add `useKeyboardShortcut({ combo: 'Mod+K', allowInInput: true, handler })`. Items filter on their default-slot text (`#prefix`/`#suffix` are not searched; `keywords` adds aliases); `:filterable="false"` for server search.
+- `#prefix` sits flush against the label: the item is `flex items-center` with no gap (`CommandPaletteItem.vue:16-26`). Give the icon its own margin, as frappe-ui's story does: `<span :class="[icon, 'mr-3 size-4 text-ink-gray-7']" />` (`experimental/CommandPalette/stories/Default.vue:74`; stories ship only in the repo).
+- `as="a"` + `href` renders a real link (modifier-click opens a tab); since 1.2.0 the `href` is kept only when relative or `http(s)`/`mailto`/`tel` (`CommandPaletteItem.vue:17,181-183`).
+- A pick closes the palette; `event.preventDefault()` in `@select` keeps it open.
 
 ## 10. `frappe-ui/icons`
 

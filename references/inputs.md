@@ -1,4 +1,4 @@
-# Form controls — frappe-ui 1.1.0
+# Form controls — frappe-ui 1.2.0
 
 Every form control in frappe-ui (buttons, text, selection, toggles, pickers, upload), read from `src/components/*` and `src/utils/*`. Paths below are relative to `node_modules/frappe-ui/src/`.
 
@@ -142,7 +142,7 @@ Emits: `update:modelValue` [string]. Slots: `prefix`, `suffix`, `label({required
 - It emits on both `input` and `change` (TextInput.vue:49–50). A side effect bound to `@update:modelValue` runs on every keystroke and once more on blur.
 - `debounce` is read once, at setup (TextInput.vue:281). Changing it later has no effect.
 - The input is bound one way, `:value="modelValue"` (TextInput.vue:39): whenever it renders, the field shows exactly the parent's value. A model the parent normalises — trimmed, or read back from `route.query` — eats the trailing space while the person types "steel bea…". Bind a local ref that is never rewritten, derive the trimmed value from it (design.md §1.14 has the URL-synced search).
-- `required` is the native attribute on the `<input>` (TextInput.vue:41; Textarea.vue:27): inside your own `<form>` the browser blocks the submit with its own bubble before your validation runs — write `<form novalidate @submit.prevent="…">`, as `dialog.prompt` does (utils/dialog.ts:667-671).
+- `required` is the native attribute on the `<input>` (TextInput.vue:41; Textarea.vue:27): inside your own `<form>` the browser blocks the submit with its own bubble before your validation runs — write `<form novalidate @submit.prevent="…">`, as `dialog.prompt` does (utils/dialog.ts:680-684).
 - `autocomplete="off" is set by default. Pass your own `autocomplete` to override it (TextInput.vue:47).
 - `#prefix`/`#suffix` are absolutely positioned, and the input reserves a fixed padding for them (`ps-8` at `sm`). Content wider than one icon overlaps the text.
 - `type="date"`/`"time"` give the browser's native picker. For the library pickers see §17 and §18.
@@ -548,7 +548,7 @@ Common props (`CommonDatePickerProps`):
 
 | Prop | Type | Default |
 |---|---|---|
-| `format` | dayjs format, **display only** | — |
+| `format` | dayjs format for the shown text (the model stays ISO); since 1.2.0 also the day-month-year order typed dates are read in | — |
 | `size`, `variant` | | `sm`, `'subtle'` |
 | `placeholder` | `string` | per picker, below |
 | `open` | `boolean` | — |
@@ -586,9 +586,11 @@ Emits: `update:modelValue`, `update:open`, `change`. Slots: `trigger`, `prefix`,
 - With `:clearable="false"` and an empty model, the field **shows today** without emitting anything (DatePicker.vue:188).
 - `DateRangePicker` emits only when both ends are set, and shows "A to B" (DateRangePicker.vue:311, :253).
 - `DateTimePicker` stays open after a date click and moves focus to the time input.
-- Timezones: `DateTimePicker` emits through `dayjsSystem`, converting local time to `setConfig('systemTimezone')` (DateTimePicker.vue:362). It reads the model back with plain `dayjs`, without converting it back (DateTimePicker.vue:240). When `systemTimezone` differs from the browser's zone, the field shows the system-zone string after a pick, so test that case before relying on it.
+- Timezones: `DateTimePicker` emits through `dayjsSystem`, converting local time to `setConfig('systemTimezone')` (DateTimePicker.vue:368). It reads the model back with plain `dayjs`, without converting it back (DateTimePicker.vue:240). When `systemTimezone` differs from the browser's zone, the field shows the system-zone string after a pick, so test that case before relying on it.
 - The pickers have no `#label` or `#description` slot. A `#trigger` slot replaces the TextInput, and the label, description and error go with it.
 - Typed text commits on blur or Enter. Text that does not parse, or a date outside `min`/`max`, reverts.
+- Typed dates with a `format` (1.2.0, DatePicker/composables.ts:104-122, DatePicker/utils.ts:56-107): numbers alone read in the format's order — under `DD-MM-YYYY`, `3-11-2026`, `3/11/26` and `03.11.2026` are 3 November (1.1.0 read them month-first). No leading zeros, a two-digit year, `-` `/` `.` as separator, a date-time without seconds or without its time, and AM/PM in either case are accepted; numeric text that fits none of these is rejected rather than guessed. ISO text (`2026-11-03`) and text with a month name still parse loosely. Without `format` typed text goes to `dayjs()` as before.
+- A focus and blur with no edit keeps the value (1.2.0, DatePicker.vue:257-262, DateTimePicker.vue:323-328): a `format` that hides the seconds no longer drops them.
 - `class` and other attributes land on a wrapper `<div>` around the trigger (shared/picker/PickerShell.vue:15).
 
 ---

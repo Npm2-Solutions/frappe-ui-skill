@@ -1,6 +1,6 @@
-# Overlays — dialogs, popovers, menus, tooltips, sheets, toasts (frappe-ui 1.1.0)
+# Overlays — dialogs, popovers, menus, tooltips, sheets, toasts (frappe-ui 1.2.0)
 
-Everything that floats over the page, read from `src/` of frappe-ui 1.1.0. `file:line` is relative to `src/components/` unless it starts with `utils/`, `composables/`, `directives/` or `index.ts`.
+Everything that floats over the page, read from `src/` of frappe-ui 1.2.0. `file:line` is relative to `src/components/` unless it starts with `utils/`, `composables/`, `directives/` or `index.ts`.
 
 Sections: [Shared rules](#shared-rules) · [Dialog](#dialog) · [dialog() functions + Dialogs](#dialog-functions--dialogs) · [Popover](#popover) · [Dropdown](#dropdown) · [Menu options shape (Dropdown + ContextMenu)](#menu-options-shape-dropdown--contextmenu) · [ContextMenu](#contextmenu) · [HoverCard](#hovercard) · [Tooltip + TooltipProvider](#tooltip--tooltipprovider) · [BottomSheet (+ useSheetDrag)](#bottomsheet--usesheetdrag) · [Toast](#toast) · [KeyboardShortcutsDialog](#keyboardshortcutsdialog) · [SettingsDialog family](#settingsdialog-family) · [usePortalTarget](#useportaltarget) · [vOnOutsideClick](#vonoutsideclick) · [useAutofocusOnOpen / vFocus](#useautofocusonopen--vfocus)
 
@@ -10,7 +10,7 @@ Sections: [Shared rules](#shared-rules) · [Dialog](#dialog) · [dialog() functi
 
 - All overlays are reka-ui underneath and teleport to `body` unless a host names a portal target ([usePortalTarget](#useportaltarget)).
 - Every "trigger" slot is rendered `as-child`: the slot must be **one element** that accepts attrs/refs (a `<Button>`, a `<button>`), not text or a fragment.
-- `Popover`, `Dropdown`, `ContextMenu`, `HoverCard`, `Tooltip` set `inheritAttrs: false` → a `class`/`style` on the component itself goes nowhere (Popover.vue:68, Dropdown.vue:74, ContextMenu.vue:50, HoverCard.vue:20, Tooltip.vue:13). Put classes on the element in the trigger slot.
+- `Popover`, `Dropdown`, `ContextMenu`, `HoverCard`, `Tooltip` set `inheritAttrs: false` → a `class`/`style` on the component itself goes nowhere (Popover.vue:68, Dropdown.vue:74, ContextMenu.vue:50, HoverCard.vue:22, Tooltip.vue:15). Put classes on the element in the trigger slot.
 - Delays are **milliseconds** (v0 used seconds; `scripts/migrate-overlays-v1.js:215` multiplies by 1000).
 - Icons are `lucide-*` class strings or components; any other string renders nothing and warns in dev.
 - Floating panels share `PopoverPanel` (`shared/popover/PopoverPanel.vue`): `rounded-6 bg-surface-elevation-2 shadow-2xl ring-1`, 80ms fade on open, no scale.
@@ -65,7 +65,7 @@ Bare dialog (own layout, still needs an accessible name):
 - An action **with** `onClick` does not close the dialog; call `close()` from its context. An action **without** `onClick` just closes (Dialog.vue:353). The button shows `loading` while the promise runs; a throw is not caught for display (only `finally`).
 - Action buttons are keyed by `label` (Dialog.vue:125) — two actions with the same label collide.
 - With one action and `size` xs/sm/md the button is full width (Dialog.vue:368).
-- There is **no `options` prop** in 1.1.0: `title`, `message`, `size`, `icon`, `actions` are top-level props. An `:options="{…}"` from old code is an unknown attr and does nothing.
+- There is **no `options` prop** in 1.2.0: `title`, `message`, `size`, `icon`, `actions` are top-level props. An `:options="{…}"` from old code is an unknown attr and does nothing.
 - The v0 `icon: { name, theme }` object is removed; it renders an empty badge and warns (Dialog.vue:273). Use `icon="lucide-…"` + `theme`.
 - `open` wins when both `open` and `modelValue` are bound (Dialog.vue:239).
 - Header shows only with `title` or `#title`; close button then sits in the header, otherwise absolute top-right (Dialog.vue:139). `bare` drops the close button, title, icon and actions (dev warning, Dialog.vue:281-289).
@@ -107,12 +107,13 @@ dialog.prompt({
 ```
 
 **Gotchas**
-- `dialog.alert` does **not** exist — the namespace is `{ confirm, prompt, danger }` (utils/dialog.ts:744). `FrappeUIProvider.md:31` mentions `dialog.alert`; the code wins.
-- `onConfirm` / action `onClick`: resolve auto-closes, reject shows the error inline (Frappe `messages[0]`, else `.message`) and re-enables buttons (utils/dialog.ts:307).
-- While a confirm button is loading, cancel/Escape are ignored (utils/dialog.ts:352); prompt's cancel is **not** guarded (utils/dialog.ts:574).
-- prompt: an empty `required` field blocks submit **silently**, no message (utils/dialog.ts:556). Checkboxes are never "required". Validators run in parallel after the required check.
+- `dialog.alert` does **not** exist — the namespace is `{ confirm, prompt, danger }` (utils/dialog.ts:762). `FrappeUIProvider.md:31` mentions `dialog.alert`; the code wins.
+- `onConfirm` / action `onClick`: resolve auto-closes, reject shows the error inline (Frappe `messages[0]`, else `.message`) and re-enables buttons (utils/dialog.ts:306).
+- While a confirm button is loading, cancel/Escape are ignored (utils/dialog.ts:351); prompt's cancel is **not** guarded (utils/dialog.ts:584).
+- prompt: an empty `required` field blocks submit **silently**, no message (utils/dialog.ts:566). Checkboxes are never "required". Validators run in parallel after the required check.
 - prompt focuses the first text/textarea field; Enter in a single-line field submits (it is a real `<form>`).
-- `theme: 'amber'` colors the icon but leaves the confirm button untinted (Button has no amber, utils/dialog.ts:226).
+- prompt loads `FormControl` on first use (1.2.0, utils/dialog.ts:448-457): the dialog joins the stack once that import resolves, a beat later on the first call, and a prompt `close()`d before then never shows (utils/dialog.ts:726-731). Code or tests that look for the prompt's fields right after the call must wait for them.
+- `theme: 'amber'` colors the icon but leaves the confirm button untinted (Button has no amber, utils/dialog.ts:225).
 - `<Dialogs />`: only the first mounted host renders the stack; extras warn in dev (Dialogs.vue:93, 72). Don't add one if `FrappeUIProvider` is used.
 
 ---
@@ -262,6 +263,7 @@ Props: `side='bottom'`, `align='start'`, `offset=4`, `collisionPadding=10`, `hov
 **Gotchas**
 - Opens on keyboard focus too; touch and screen readers may never show it — never put the only path to an action in it.
 - Pointer can move into the card; it stays open while over trigger or card.
+- Since 1.2.0 only the trigger renders until its first hover or focus (shared/deferredTrigger.ts, HoverCard.vue:117-119); then the card mounts and opens with its usual delay. Mounting renders the trigger again: its element is replaced and components inside it are created anew (focus and text selection are carried over, shared/deferredTrigger.ts:17-19), so keep state outside the `#trigger` slot and do not hold on to its element. Opening through `v-model:open`, the exposed `open()` or a slot control mounts it at once (HoverCard.vue:77-88). On touch it mounts only when a tap focuses the trigger.
 
 ---
 
@@ -289,9 +291,10 @@ Slots: `#default` = **the trigger** (the only overlay where default is the trigg
 ```
 
 **Gotchas**
-- No `text` and no `#content` → no bubble at all (Tooltip.vue:60).
-- Inside a `TooltipProvider` the Tooltip's own `hoverDelay` is ignored; the provider's applies (Tooltip.vue:36). `SidebarRail` wraps its items in one with `hoverDelay 0`.
+- No `text` and no `#content` → no bubble at all (Tooltip.vue:68).
+- Inside a `TooltipProvider` the Tooltip's own `hoverDelay` is ignored; the provider's applies (Tooltip.vue:38). `SidebarRail` wraps its items in one with `hoverDelay 0`.
 - No `align` prop. The trigger must be focusable for keyboard users.
+- Since 1.2.0 the tooltip mounts on the first hover or focus of its trigger (Tooltip.vue:42,59-61), so a long list of tooltips renders fast; on touch it never mounts. That first hover renders the trigger again — a new element, and any component in the default slot is created anew — so its local state resets and an element saved from it (an observer, a stored `$el`) points at the old node; template refs follow the new one (shared/deferredTrigger.ts:17-19). Focus that comes from a press (a click or a tap) does not mount it; the hover before a click does.
 - `Button` has its own `tooltip` prop and joins a surrounding provider.
 
 ---
@@ -388,7 +391,7 @@ useKeyboardShortcut({ combo: 'Mod+Shift+Slash', description: 'Show keyboard shor
 | `SettingsPanel` | `value` (req) | default |
 | `SettingsHeader` | `title?`, `description?` | default (replaces all), `#actions` |
 | `SettingsBody` | — (ScrollArea); exposes `viewportElement` | default |
-| `SettingsRow` | `title` (req), `description?`, `labelFor?` | default = the control |
+| `SettingsRow` | `title` (req), `description?` (plain text), `labelFor?` | default = the control; `#description` replaces the `description` text, for markup such as a link (1.2.0, SettingsRow.vue:12-17) |
 
 ```vue
 <SettingsDialog v-model:open="open" v-model:tab="tab">
@@ -413,7 +416,7 @@ useKeyboardShortcut({ combo: 'Mod+Shift+Slash', description: 'Show keyboard shor
 - Every mounted SettingsDialog registers a global `Mod+Shift+Comma` toggle that fires even inside inputs and dialogs (SettingsDialog.vue:41, 72); two mounted instances → duplicate-shortcut warning. Pass `:keyboard-shortcut="false"` on extras.
 - Tabs use manual activation: arrows move focus, Enter/Space selects (SettingsDialog.vue:13).
 - Panels unmount when not selected (SettingsDialog.vue:42) — form state is lost on tab switch unless `:unmount-on-hide="false"`.
-- `SettingsRow` turns its title into a `<label for>` automatically when the control has `data-slot="control"`, a switch/checkbox role, or is an input/select/textarea with an id (SettingsRow.vue:37).
+- `SettingsRow` turns its title into a `<label for>` automatically when the control has `data-slot="control"`, a switch/checkbox role, or is an input/select/textarea with an id (SettingsRow.vue:47).
 
 ---
 

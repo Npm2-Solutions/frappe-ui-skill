@@ -1,6 +1,6 @@
 # frappe-ui recipes: eight full app screens, read from source and seen rendered
 
-What is in this file: the eight "recipes" frappe-ui 1.1.0 ships on https://ui.frappe.io (Discussions, Compose, Deals,
+What is in this file: the eight "recipes" frappe-ui 1.2.0 ships on https://ui.frappe.io (Discussions, Compose, Deals,
 Tickets, Mail, Files, Tasks, Accounting). Each is a complete app screen built only from frappe-ui parts, in a desktop
 and a mobile layout. For each one you get the screen, its skeleton, the components and the props that matter (with
 file:line), the patterns worth copying, how the mobile version changes it, and the screenshots. The last sections
@@ -19,9 +19,11 @@ Sections
 - [9. Patterns across the recipes](#9-patterns-across-the-recipes) - the house style, 14 rules with examples
 - [10. Measures](#10-measures) - row heights, widths, paddings, type sizes in one table
 
-Paths: every `File.vue:N` below is in `docs/components/recipes/` of https://github.com/frappe/frappe-ui (tag v1.1.0).
+Paths: every `File.vue:N` below is in `docs/components/recipes/` of https://github.com/frappe/frappe-ui (tag v1.2.0).
 Screenshots: `assets/recipes/` in this skill (light theme, viewport shots, 1440x900 desktop,
-390x844 phone), taken 10 Nov 2026 from the live site.
+390x844 phone), taken 10 Nov 2026 from the live site (v1.1.0). v1.2.0 changes only comments in five recipe files
+(Discussions desktop and mobile, Files, Tasks and Tickets mobile) and the line numbers after them; the layouts, and so
+the screenshots, are the same.
 
 ---
 
@@ -81,7 +83,7 @@ SidebarRail  Sidebar 14rem          scroll region (ScrollArea)        BottomShee
 
 | Part | How it is used | Where |
 |---|---|---|
-| `DesktopShell` | `#rail`, `#sidebar`, default slot = page | `DiscussionsDesktop.vue:505-745` |
+| `DesktopShell` | `#rail`, `#sidebar`, default slot = page | `DiscussionsDesktop.vue:505-743` |
 | `SidebarRail` + `SidebarRailItem` | one item per community: `:label` (tooltip), `:active`, `:badge="c.unread"`, `badge-style="count"`, an `Avatar size="lg" shape="square" class="size-7"` in the default slot | `:519-535` |
 | ghost rail items | `variant="ghost" icon="lucide-search"`; Settings opens the dialog | `:541-547` |
 | `Dropdown` with `#trigger="{ open }"` | the account avatar at the foot of the rail is the trigger | `:551-567` |
@@ -94,13 +96,13 @@ SidebarRail  Sidebar 14rem          scroll region (ScrollArea)        BottomShee
 | `TabButtons` | Unread / All filter, count text on the right | `:667-676` |
 | `List` (no `columns`) | default feed template `auto minmax(0,1fr) auto`; `class="-mx-3 sm:list-gap-4"` | `:681` |
 | `ListRow class="h-15" @click` | the click handler makes it a button with a hover surface | `:682-687` |
-| `Avatar size="2xl"`, `Badge`, `Tooltip` | unread `Badge theme="amber" variant="solid" size="sm"` inside a Tooltip; otherwise plain `Badge` with the comment count | `:689-740` |
-| `SettingsDialog` | `v-model:open`, `v-model:tab`, `size="5xl"`; `SettingsSidebar` > `SettingsNavGroup label` > `SettingsNavItem value` (+ `#prefix` icon/avatar); `SettingsContent` > `SettingsPanel value` > `SettingsHeader title [description] [#actions]` + `SettingsBody` | `:747-1122` |
-| `SettingsRow title description` + control | Select / Switch / Button on the right; rows in `divide-y divide-outline-gray-1` | `:845-863`, `:874-955` |
-| `Select #item-prefix="{ item }"` | colored swatch per option (theme picker) | `:879-905` |
-| `List` inside settings | `:row-height="56"`, `:columns="['minmax(0,1fr)','6rem','3rem']"`, `ListHeader`, `ListRows :items v-slot="{ item: member }"` | `:1077-1118` |
+| `Avatar size="2xl"`, `Badge`, `Tooltip` | unread `Badge theme="amber" variant="solid" size="sm"` inside a Tooltip; otherwise plain `Badge` with the comment count | `:689-738` |
+| `SettingsDialog` | `v-model:open`, `v-model:tab`, `size="5xl"`; `SettingsSidebar` > `SettingsNavGroup label` > `SettingsNavItem value` (+ `#prefix` icon/avatar); `SettingsContent` > `SettingsPanel value` > `SettingsHeader title [description] [#actions]` + `SettingsBody` | `:745-1120` |
+| `SettingsRow title description` + control | Select / Switch / Button on the right; rows in `divide-y divide-outline-gray-1` | `:843-861`, `:872-953` |
+| `Select #item-prefix="{ item }"` | colored swatch per option (theme picker) | `:877-903` |
+| `List` inside settings | `:row-height="56"`, `:columns="['minmax(0,1fr)','6rem','3rem']"`, `ListHeader`, `ListRows :items v-slot="{ item: member }"` | `:1075-1116` |
 
-Feed row, the canonical two-line row (`DiscussionsDesktop.vue:695-720`):
+Feed row, the canonical two-line row (`DiscussionsDesktop.vue:695-718`):
 ```vue
 <ListCell>
   <div class="min-w-0 flex-1">
@@ -117,20 +119,20 @@ Feed row, the canonical two-line row (`DiscussionsDesktop.vue:695-720`):
 ```
 
 **Worth copying**
-- Unread = weight, not color: the title goes `text-base` -> `text-base-semibold`; the only color is the amber count badge (`:703-705`, `:734`).
-- The sized text sits in an inner `<span>`: `leading-none` and `truncate` on the same element shears descenders (comment `:697-700`).
+- Unread = weight, not color: the title goes `text-base` -> `text-base-semibold`; the only color is the amber count badge (`:701-703`, `:732`).
+- The sized text sits in an inner `<span>` so it keeps its own line-height (comment `:697-698`). In 1.1.0 this also kept `leading-none` + `truncate` from shearing descenders; since 1.2.0 `truncate` clips only sideways (setup-and-tokens.md §4) and the recipes dropped that remark.
 - `-mx-3` on the List lets the row hover surface bleed past the text edge so text stays aligned with the toolbar above (`:679-681`).
 - Body container for a reading feed: `mx-auto mt-5 w-full max-w-[940px] px-3 pb-10 sm:px-5` (`:665`).
 - Settings page grammar: panels of `section`s `space-y-11 pt-6`, section titles `text-lg-semibold text-ink-gray-8`, rows of
-  `SettingsRow` (title + description left, one control right) in `divide-y divide-outline-gray-1` (`:804-864`).
+  `SettingsRow` (title + description left, one control right) in `divide-y divide-outline-gray-1` (`:802-862`).
 - Icon-only buttons always carry `label` (it becomes the `aria-label`, text sr-only: `Button.vue:327,347`), e.g. `label="Space actions"` (`:654-658`).
 
 **Mobile changes** (`DiscussionsMobile.vue`)
 - `MobileShell` + `PageHeaderMobile title="Home"`: `#prefix` ghost `lucide-panel-left` opens the spaces sheet, `#suffix` ghost `lucide-square-pen` = new (`:97-114`).
-- The sidebar becomes a `BottomSheet v-model:open title="Spaces"` holding a `List v-model:active` whose rows are `h-11 rounded-5`, icons `size-5`, text `text-lg` (`:230-258`).
-- Rows: `List class="list-gap-3 list-row-px-4"`, `ListRow class="h-17"`, title `text-lg` (16px) / meta `text-md` (15px): one type step up from desktop (`:122-151`, `:169-227`).
+- The sidebar becomes a `BottomSheet v-model:open title="Spaces"` holding a `List v-model:active` whose rows are `h-11 rounded-5`, icons `size-5`, text `text-lg` (`:226-254`).
+- Rows: `List class="list-gap-3 list-row-px-4"`, `ListRow class="h-17"`, title `text-lg` (16px) / meta `text-md` (15px): one type step up from desktop (`:122-149`, `:167-223`).
 - A "Pinned" block above the feed: label `lucide-pin size-4 text-ink-gray-4` + `text-base` (`:118-121`).
-- `#nav` = `MobileNav` with 4 `MobileNavItem label icon :active`; the last is "You" with an `Avatar size="md"` in its default slot, ringed when active (`:260-291`).
+- `#nav` = `MobileNav` with 4 `MobileNavItem label icon :active`; the last is "You" with an `Avatar size="md"` in its default slot, ringed when active (`:256-287`).
 
 ---
 
@@ -285,11 +287,11 @@ Subject cell (`TicketsDesktop.vue:436-445`):
 - The one flexible track is the title (`minmax(0,1fr)`); every other column is a fixed rem width, so values line up row after row.
 - `list-row-px-3` (sets `--list-row-padding-x`) instead of `px-3`: it reaches header and rows alike and composes with the checkbox column (`list/style.css:73-86`).
 - Selection changes the header, not a floating bar: count next to the title, bulk verbs replace the normal actions.
-- In a `selectable` List a row click toggles the selection (it does not "open"): `ListRow.vue:50-53`.
+- In a `selectable` List a row click toggles the selection (it does not "open"): `ListRow.vue:57-60`.
 
 **Mobile changes** (`TicketsMobile.vue`)
 - Header: title + ghost filter icon (`:209-217`); `TabButtons fluid` Open/All under it (`:220-229`).
-- The six columns fold into one card row: `Avatar size="2xl"` (cell `self-start pt-0.5`), subject `text-lg`, `#id · customer` `text-md`, an SLA line `text-sm` with the same state colors, trailing time + status Badge (`:231-305`).
+- The six columns fold into one card row: `Avatar size="2xl"` (cell `self-start pt-0.5`), subject `text-lg`, `#id · customer` `text-md`, an SLA line `text-sm` with the same state colors, trailing time + status Badge (`:231-303`).
 - Rows `class="py-3"` (content-height), `List class="list-gap-3 list-row-px-4"`.
 - No checkboxes, no sort headers on mobile.
 
@@ -401,7 +403,7 @@ Static row with a stretched open target (`FilesDesktop.vue:658-677`):
 ```
 
 **Worth copying**
-- A row with `@click` renders as a `<button>` (`ListRow.vue:18-22`, `:45-47`), so it cannot contain another button (invalid HTML). When a row needs its own controls: static row + `absolute inset-0` open target + `relative` controls (`:652-657`). The recipe's target is a `<button @click>` because Files opens folders in place; a row that navigates gets a `RouterLink` there instead (modifier-click works), and `rounded-[10px]` is `rounded-5` on the scale — list.md «Rows: link, button or div».
+- A row with `@click` renders as a `<button>` (`ListRow.vue:24-28`, `:45-47`), so it cannot contain another button (invalid HTML). When a row needs its own controls: static row + `absolute inset-0` open target + `relative` controls (`:652-657`). The recipe's target is a `<button @click>` because Files opens folders in place; a row that navigates gets a `RouterLink` there instead (modifier-click works), and `rounded-[10px]` is `rounded-5` on the scale — list.md «Rows: link, button or div».
 - `-mx-3` + `list-row-px-3`: the hover surface bleeds into the gutter while header and row text align with the search box above (`:607-612`).
 - Grouping is the primary order; the column sort orders within each group (`:513-530`).
 - Two empty states: "nothing here yet" (with the next step) vs "nothing matches" (with how to widen the search).
@@ -409,9 +411,9 @@ Static row with a stretched open target (`FilesDesktop.vue:658-677`):
 **Mobile changes** (`FilesMobile.vue`)
 - Header `#prefix`: back chevron labelled with the parent folder when inside a folder, else `lucide-panel-left` opening the nav sheet; `#suffix`: `+` Dropdown (New folder / Upload) (`:542-566`). Folders drill in place, the title becomes the folder name (`:377-394`).
 - Search + type filter pinned: `sticky top-0 z-10 flex gap-2 border-b px-4 py-2` (`:569-586`).
-- One flat list, newest first, no group headers (`:589-590`). Row `h-17`, icon in a `size-7` box (`size-5` glyph), name `text-lg leading-snug`, meta `mt-0.5 text-sm text-ink-gray-5` "Today · 8.4 MB" (`:598-636`).
-- The row Dropdown becomes a `BottomSheet :title="activeItem?.name"` action sheet, one sheet reused for whichever row; tapping a file opens it too (`:409-457`, `:711-729`).
-- The sidebar (sections + storage meter) becomes a `BottomSheet title="Files"` (`:679-707`).
+- One flat list, newest first, no group headers (`:589-590`). Row `h-17`, icon in a `size-7` box (`size-5` glyph), name `text-lg leading-snug`, meta `mt-0.5 text-sm text-ink-gray-5` "Today · 8.4 MB" (`:598-634`).
+- The row Dropdown becomes a `BottomSheet :title="activeItem?.name"` action sheet, one sheet reused for whichever row; tapping a file opens it too (`:409-457`, `:709-727`).
+- The sidebar (sections + storage meter) becomes a `BottomSheet title="Files"` (`:677-705`).
 
 ---
 
@@ -489,9 +491,9 @@ Meta panel, label/control pairs (`TasksDesktop.vue:1246-1262`):
 - "A real app would use two routes and pass the task id as a param" (`:747-748`).
 
 **Mobile changes** (`TasksMobile.vue`)
-- List: `TabButtons fluid` Open/All (`:319-328`); rows `py-2.5`, status icon `size-4.5`, title `text-lg leading-snug` (gray-5 when Done), meta row `text-md` with priority, first label Badge, due; trailing `Avatar size="sm"` (`:330-404`).
-- Detail: `PageHeaderMobile :title="`#${id}`"` + back chevron (`:411-420`); `h1 text-xl-semibold` (`:423`).
-- The meta panel becomes chips: `mt-6 flex flex-wrap items-center gap-2` of default `Button`s with icon/avatar prefixes, the status one inside a `Dropdown`; labels `Badge size="lg"` ("Gameplan's mobile task detail lays the same controls out as a wrapping row instead of a side panel", `:430-490`).
+- List: `TabButtons fluid` Open/All (`:319-328`); rows `py-2.5`, status icon `size-4.5`, title `text-lg leading-snug` (gray-5 when Done), meta row `text-md` with priority, first label Badge, due; trailing `Avatar size="sm"` (`:330-402`).
+- Detail: `PageHeaderMobile :title="`#${id}`"` + back chevron (`:409-418`); `h1 text-xl-semibold` (`:421`).
+- The meta panel becomes chips: `mt-6 flex flex-wrap items-center gap-2` of default `Button`s with icon/avatar prefixes, the status one inside a `Dropdown`; labels `Badge size="lg"` ("Gameplan's mobile task detail lays the same controls out as a wrapping row instead of a side panel", `:428-488`).
 
 ---
 
@@ -592,17 +594,17 @@ What all eight do the same way. Each rule with one or two examples.
 6. **Row composition.** Title `text-base text-ink-gray-8 truncate`; meta line `mt-1.5 text-sm text-ink-gray-5`
    joined with ` · `; trailing time `text-sm`/`text-xs text-ink-gray-5` right-aligned; status as `Badge`; people as
    `Avatar size="sm"` + name `text-base text-ink-gray-7`. Inner span for sized text under `truncate`
-   (Discussions `:697-708`). Bold only for unread (Discussions `:704`, Mail `:637`).
+   (Discussions `:697-706`). Bold only for unread (Discussions `:702`, Mail `:637`).
 
 7. **Clickable rows: `@click`/`route` row, or a static row with a stretched button.** A row with a handler is a
-   `<button>` (`ListRow.vue:20`); if the row also needs its own controls, keep it static, put
+   `<button>` (`ListRow.vue:26`); if the row also needs its own controls, keep it static, put
    `<button class="absolute inset-0">` in the first cell and `relative` on the controls, and restore hover with
    `sm:hover:bg-surface-gray-1 active:bg-surface-gray-2 sm:rounded-[10px]` (Files `:652-669`, Tasks `:1036-1054`). In an app: a `RouterLink`
    target when the row opens a record, `rounded-5` for the 10px, the ring kept (list.md).
    Master-detail = `List v-model:active` (Mail `:622`); multi-select = `selectable v-model:selection` (Tickets `:412-413`).
 
 8. **Inset and alignment through the list hooks, not padding.** `list-row-px-3` / `list-row-px-4` / `list-row-px-0`
-   and `list-gap-3` / `sm:list-gap-4` set `--list-row-padding-x` / `--list-gap` (tailwind `plugin.js:220-224`).
+   and `list-gap-3` / `sm:list-gap-4` set `--list-row-padding-x` / `--list-gap` (tailwind `plugin.js:241-245`).
    Pair `-mx-3` with `list-row-px-3` so hover surfaces bleed into the gutter while text aligns with the toolbar
    (Files `:607-612`, Discussions `:679-681`).
 
@@ -639,13 +641,13 @@ What all eight do the same way. Each rule with one or two examples.
     - `PageHeaderMobile` centered `text-xl-semibold` title, `#prefix` = back chevron (labelled with where it goes) or
       `lucide-panel-left` (opens the former sidebar as a `BottomSheet`), `#suffix` = one ghost action or an ellipsis
       `Dropdown` (Mail mobile `:497-583`, Files mobile `:542-566`).
-    - `MobileNav` with 4 `MobileNavItem`s, the last "You" with an avatar (Discussions mobile `:260-291`).
+    - `MobileNav` with 4 `MobileNavItem`s, the last "You" with an avatar (Discussions mobile `:256-287`).
     - Table columns fold into feed rows; text one step up (`base`->`lg`, `sm`->`md`); `list-gap-3 list-row-px-4`;
-      rows `h-14`...`h-17` or `py-3` (Tickets mobile `:231-305`).
+      rows `h-14`...`h-17` or `py-3` (Tickets mobile `:231-303`).
     - `TabButtons fluid`; filters/search/tabs in a `sticky top-0 z-10 border-b bg-surface-base px-4 py-2` bar
       (Files mobile `:569`, Mail mobile `:513`).
-    - Row Dropdowns -> `BottomSheet` action sheets (Files mobile `:711-729`); side panel -> wrapping chips of Buttons
-      (Tasks mobile `:432-490`); split panes -> two screens with a back button (Mail mobile `:496`, `:568`); boards ->
+    - Row Dropdowns -> `BottomSheet` action sheets (Files mobile `:709-727`); side panel -> wrapping chips of Buttons
+      (Tasks mobile `:430-488`); split panes -> two screens with a back button (Mail mobile `:496`, `:568`); boards ->
       snap-scrolling columns (Deals mobile `:105-111`); wide tables -> horizontal `ScrollArea` + `List class="w-max"`
       (Accounting mobile `:309-314`); group headers dropped (Files mobile `:589`); hover-only controls get
       `[@media(hover:none)]:opacity-100` (DealCard `:48`).
@@ -663,13 +665,13 @@ What all eight do the same way. Each rule with one or two examples.
 | Feed row | `h-15` (60px), avatar `2xl` | `h-17` (68px), avatar `2xl` | Discussions `:685` / mobile `:126` |
 | Table row | `:row-height="60"` (two-line), `40` (one-line), `44` | `h-14`, `h-16`, `h-17`, `py-3` | Tickets `:411`, Files `:614`, Accounting `:522` |
 | Task row | `h-10` | `py-2.5` | Tasks `:1046` / mobile `:334` |
-| Settings list row | `:row-height="56"` | - | Discussions `:1012` |
+| Settings list row | `:row-height="56"` | - | Discussions `:1010` |
 | Content padding | `px-3 sm:px-5` (Tasks `sm:px-6`), top `pt-3`...`pt-5` | `px-4` | Tickets `:400`, Tasks `:910` |
 | Reading width | feed `max-w-[940px]`, prose `max-w-[770px]`, dashboard `max-w-4xl` | full width | Discussions `:665`, Compose `:191`, Accounting `:479` |
 | Panels | list pane `w-[23rem]`, meta panel `w-[20rem]`, board column `w-72` | - | Mail `:597`, Tasks `:1246`, Deals `:527` |
 | Gaps | header clusters `gap-2`, board `gap-3 p-4`, cards `gap-2 p-2`, card body `p-3` | `gap-3`, `px-4 py-3` | Deals `:523-555` |
 | Type (px) | `xs` 12, `sm` 13, `base` 14, `md` 15, `lg` 16, `xl` 17, `2xl` 18, `3xl` 20, `4xl` 24 (`tailwind/tokens/typography.js`) | | |
-| Title / meta | `text-base` / `text-sm` | `text-lg` / `text-md` | Tickets `:438-441` / mobile `:253-255` |
-| Headings | page title `text-lg font-semibold` (`PageHeaderTitle.vue:2`), record `text-2xl-semibold`, section `text-lg-semibold` or `text-sm font-semibold` (dashboard), doc title `text-4xl-semibold` | header `text-xl-semibold`, record `text-xl-semibold`, doc `text-3xl-semibold` | Tasks `:1178`, Discussions `:844`, Accounting `:511` |
+| Title / meta | `text-base` / `text-sm` | `text-lg` / `text-md` | Tickets `:438-441` / mobile `:251-253` |
+| Headings | page title `text-lg font-semibold` (`PageHeaderTitle.vue:2`), record `text-2xl-semibold`, section `text-lg-semibold` or `text-sm font-semibold` (dashboard), doc title `text-4xl-semibold` | header `text-xl-semibold`, record `text-xl-semibold`, doc `text-3xl-semibold` | Tasks `:1178`, Discussions `:842`, Accounting `:511` |
 | Icons | `size-4` (nav, cells), `size-3.5` (inline meta), `size-2` dots, `size-1.5` label dots | `size-5` (sheets, file glyphs), `size-4.5` (status) | Tickets `:450`, Files mobile `:610` |
 | Radius | cards/columns `rounded-6`, row hover `rounded-[10px]` (= `rounded-5`), sheet rows `rounded-6`, group header `rounded-1` | | Deals `:576`, Files `:661` |

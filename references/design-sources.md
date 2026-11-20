@@ -66,7 +66,7 @@ The research listed about 85 principles (A1–M5; ★ = most worth carrying). Al
 | M Performance as felt | M1 → 1.9, 2.3 · M2 → 2.1 (per-row writes), 1.10 · M3 → 1.14 · M4 → 1.9 · M5 → §3 checklist intro |
 | Gotchas found (research §5) | PageHeaderTitle span → 1.13 · 13/14px inputs on phones → 2.7 · placeholder/meta/amber contrast → 1.2, 1.7 · `dialog.*` button order and generic labels → 2.5, 1.12 · `autocomplete="off"` → 2.5 · no CSS `color-scheme` → 1.13 · `List` without tabular figures, empty, loading → 1.6, 2.1 · exact-match `SidebarItem` → 1.14 |
 
-One correction made while merging (checked in source): an empty `required` field in `dialog.prompt` is blocked before any `validate` runs (utils/dialog.ts:514-557), so a `validate` cannot supply its message — design.md 2.5 says to leave `required` off or use a `Dialog`.
+One correction made while merging (checked in source): an empty `required` field in `dialog.prompt` is blocked before any `validate` runs (utils/dialog.ts:524-567), so a `validate` cannot supply its message — design.md 2.5 says to leave `required` off or use a `Dialog`.
 
 ---
 
@@ -106,7 +106,7 @@ One correction made while merging (checked in source): an empty `required` field
 | Topic | One side | Other side | frappe-ui's intent and the rule to keep |
 |---|---|---|---|
 | Capitalisation | VWG: Title Case for buttons and headings in product UI | AFD, PRI forms, ATL: sentence case | **Sentence case.** frappe-ui's labels and examples use it ("New job", "Delete project", default `'Cancel'`). Older parts are the exception: the editor toolbar ("Bullet List") and `KeyboardShortcutsDialog` title `'Keyboard Shortcuts'`. |
-| When to validate | GOV: on submit only | PRI: submit first, then inline on change/blur; UUX #56: on blur | **Submit first, then re-check the fields that had errors as they change.** No timing is built in; `dialog.prompt` checks on confirm, and an empty required field blocks silently (utils/dialog.ts:556), so add your own message. |
+| When to validate | GOV: on submit only | PRI: submit first, then inline on change/blur; UUX #56: on blur | **Submit first, then re-check the fields that had errors as they change.** No timing is built in; `dialog.prompt` checks on confirm, and an empty required field blocks silently (utils/dialog.ts:566), so add your own message. |
 | Toasts | PRI: avoid toasts on github.com and confirm inline | ATL flags; VWG announces toasts; UUX: auto-dismiss after 3–5s | **Both, by role.** frappe-ui ships `toast` for the result of an action (4s, max 3) and `Alert` for a lasting message (Toast.md, Alert.md). When the page stays, confirm in place too: the saved field and the "Saved" state. |
 | Disabled buttons | PRI: avoid them, keep save enabled and explain on click | VWG: disable once submitting starts; UUX #32: disable while processing | **`loading` during the request, not `disabled`.** `loading` blocks clicks without dimming (Button.vue:238). For "can't yet", keep the button enabled and explain, because a disabled native button takes no hover or tooltip. |
 | How often to use modals | IMP: a modal is the last resort | HIG, ATL: fine for short focused tasks | **Short tasks yes.** frappe-ui uses dialogs for rename and delete from a list (Dialog.md) and for settings (`SettingsDialog`). Long record forms go on a page. |
@@ -114,7 +114,7 @@ One correction made while merging (checked in source): an empty `required` field
 | Typeface | AFD: distinctive type; AWB: avoid Inter | IMP operate: one sans for UI; LIN: Inter | **Inter**, the library's font. |
 | Spinner or skeleton | PRI: the spinner is the flexible default, skeletons for large areas | IMP: skeletons, not spinners in the middle of content | **A region gets a placeholder of its shape; a button or inline wait gets a spinner.** That is frappe-ui's own chart rule (States.md). |
 | Reduced motion | VWG, UUX: reduce or turn off | PRI: keep subtle animation, since loaders mean status | **Reduce, don't remove status motion.** The Spinner slows to 1.6s instead of stopping (Spinner.vue:163); menus and popovers drop their motion. |
-| Button order | PRI page forms: Save bottom-left, Cancel to its right | PRI dialogs: bottom-right, Cancel left of Save | **In dialogs, primary rightmost** (utils/dialog.ts:389; Dialog.vue:120 `justify-end`). On pages, the primary goes in `PageHeader` at the right, so pages follow the same end-aligned rule rather than Primer's bottom-left. |
+| Button order | PRI page forms: Save bottom-left, Cancel to its right | PRI dialogs: bottom-right, Cancel left of Save | **In dialogs, primary rightmost** (utils/dialog.ts:388; Dialog.vue:120 `justify-end`). On pages, the primary goes in `PageHeader` at the right, so pages follow the same end-aligned rule rather than Primer's bottom-left. |
 | White space | RUI: "start with too much white space" | IMP operate, LIN: dense is right for tools | **Compact controls, air between groups.** frappe-ui defaults to 14px text and 28px controls; spacing goes between sections, not inside rows. |
 | Hit targets | VWG: 24px with a mouse, 44px on touch | UUX: 44pt/48dp, 24px floor on web | **By pointer.** `sm` (28px) on desktop, `lg` with 44px hit areas on touch (K2). |
 
